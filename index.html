@@ -1,249 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Count up</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400&family=Archivo:wght@400;500&display=swap" rel="stylesheet">
-
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Rising</title>
 <style>
-  :root {
-    --field: #0d2a2d;
-    --field-deep: #071a1c;
-    --brass: #c9a227;
-    --patina: #7fa8a3;
-    --paper: #ece5d5;
+  :root{
+    --abyss:#04121B;
+    --deep:#0A2430;
+    --water:#11414F;
+    --surface:#5FC9BC;
+    --bone:#EFE6D6;
+    --bone-dim:rgba(239,230,214,.55);
+    --bone-faint:rgba(239,230,214,.28);
+    --brass:#D9A441;
+    --serif: Georgia, "Iowan Old Style", "Palatino Linotype", Palatino, serif;
+    --sans: "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
   }
 
-  * { box-sizing: border-box; }
-
-  html, body {
-    margin: 0;
-    min-height: 100%;
-    background: var(--field-deep);
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    margin:0;
+    background:var(--abyss);
+    color:var(--bone);
+    font-family:var(--sans);
+    overflow:hidden;
+    overscroll-behavior:none;
   }
 
-  body {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 6vmin 5vmin;
-    background:
-      radial-gradient(120% 90% at 50% 18%, var(--field) 0%, var(--field-deep) 78%);
-    color: var(--paper);
-    font-family: "Archivo", "Helvetica Neue", Arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
+  #sea{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0}
+
+  .vignette{
+    position:fixed;inset:0;z-index:1;pointer-events:none;
+    background:radial-gradient(120% 90% at 50% 38%, transparent 40%, rgba(2,8,12,.72) 100%);
   }
 
-  .plate {
-    width: 100%;
-    max-width: 60rem;
-    -webkit-user-select: none;
-    user-select: none;
-    opacity: 0;
-    transform: translateY(0.6rem);
-    animation: settle 900ms cubic-bezier(.2, .7, .3, 1) 120ms forwards;
+  .stage{
+    position:relative;z-index:2;height:100%;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:max(20px, env(safe-area-inset-top)) 20px 0;
+    text-align:center;
   }
 
-  @keyframes settle {
-    to { opacity: 1; transform: none; }
+  .since{
+    font-size:12.5px;letter-spacing:.06em;color:var(--bone-faint);
+    margin:0 0 26px;font-variant-numeric:tabular-nums;
   }
 
-  .readout {
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    gap: clamp(0.6rem, 2.4vw, 1.8rem);
-    flex-wrap: wrap;
+  .count{
+    display:flex;align-items:baseline;justify-content:center;gap:.28em;
+    margin-bottom:6px;
+  }
+  .days{
+    font-family:var(--serif);
+    font-size:clamp(76px, 21vw, 184px);
+    line-height:.84;
+    letter-spacing:-.035em;
+    font-variant-numeric:tabular-nums;
+    color:var(--bone);
+    text-shadow:0 0 44px rgba(95,201,188,.16);
+  }
+  .days-word{
+    font-family:var(--serif);
+    font-size:clamp(17px, 4.4vw, 26px);
+    color:var(--bone-dim);
+    letter-spacing:.01em;
   }
 
-  .group {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.55rem;
+  .clock{
+    font-size:clamp(17px, 5vw, 23px);
+    font-variant-numeric:tabular-nums;
+    letter-spacing:.14em;
+    color:rgba(239,230,214,.72);
+    margin-top:14px;
+  }
+  .clock .tenth{color:var(--surface);opacity:.75}
+
+  .rule{
+    width:min(280px, 62vw);height:1px;margin:30px 0 20px;
+    background:linear-gradient(90deg, transparent, rgba(239,230,214,.22), transparent);
   }
 
-  .num {
-    font-family: "Bodoni Moda", "Didot", "Playfair Display", Georgia, serif;
-    font-weight: 500;
-    font-size: clamp(3.4rem, 13.5vw, 8.5rem);
-    line-height: 0.82;
-    letter-spacing: -0.015em;
-    font-variant-numeric: tabular-nums lining-nums;
-    min-width: 2ch;
-    text-align: center;
-    color: var(--paper);
+  .horizon{
+    font-size:13px;color:var(--bone-dim);line-height:1.65;max-width:34ch;
   }
+  .horizon b{font-weight:400;color:var(--bone);font-variant-numeric:tabular-nums}
 
-  .unit {
-    font-size: clamp(0.7rem, 1.5vw, 0.82rem);
-    font-weight: 400;
-    letter-spacing: 0.09em;
-    color: var(--patina);
+  .totals{
+    display:flex;gap:22px;justify-content:center;flex-wrap:wrap;
+    margin-top:22px;font-size:11.5px;color:var(--bone-faint);
+    font-variant-numeric:tabular-nums;
   }
+  .totals span{white-space:nowrap}
+  .totals i{font-style:normal;color:rgba(239,230,214,.5)}
 
-  .sep {
-    align-self: stretch;
-    width: 1px;
-    margin-top: 0.35rem;
-    background: linear-gradient(
-      to bottom,
-      rgba(201, 162, 39, 0) 0%,
-      rgba(201, 162, 39, 0.55) 22%,
-      rgba(201, 162, 39, 0.55) 62%,
-      rgba(201, 162, 39, 0) 100%
-    );
-    height: clamp(3.4rem, 13.5vw, 8.5rem);
+  .dock{
+    position:fixed;left:0;right:0;bottom:0;z-index:3;
+    display:flex;gap:8px;justify-content:center;
+    padding:0 16px max(16px, env(safe-area-inset-bottom));
   }
-
-  .live .num { transition: opacity 160ms linear; }
-  .live.dim .num { opacity: 0.82; }
-
-  .rule {
-    height: 1px;
-    margin: clamp(2.2rem, 6vw, 3.4rem) auto clamp(1.1rem, 2.6vw, 1.6rem);
-    max-width: 34rem;
-    background: linear-gradient(
-      to right,
-      rgba(201, 162, 39, 0) 0%,
-      rgba(201, 162, 39, 0.5) 30%,
-      rgba(201, 162, 39, 0.5) 70%,
-      rgba(201, 162, 39, 0) 100%
-    );
+  .chip{
+    appearance:none;border:1px solid rgba(239,230,214,.2);
+    background:rgba(4,18,27,.42);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
+    color:rgba(239,230,214,.78);font-family:var(--sans);font-size:12px;
+    padding:9px 15px;border-radius:999px;cursor:pointer;
+    transition:border-color .2s, color .2s;
   }
+  .chip:hover{border-color:rgba(239,230,214,.45);color:var(--bone)}
+  .chip:focus-visible{outline:2px solid var(--surface);outline-offset:2px}
 
-  .inscription {
-    margin: 0 auto;
-    max-width: 34rem;
-    text-align: center;
-    font-family: "Bodoni Moda", Georgia, serif;
-    font-style: italic;
-    font-size: clamp(0.98rem, 2.4vw, 1.2rem);
-    line-height: 1.55;
-    color: rgba(236, 229, 213, 0.72);
-    text-wrap: balance;
+  /* ---- reveal ---- */
+  .reveal{
+    position:fixed;inset:0;z-index:20;display:none;
+    align-items:center;justify-content:center;padding:22px;
+    background:rgba(3,10,15,.66);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
   }
-
-  .inscription .stamp { color: var(--brass); font-style: normal; }
-
-  @media (prefers-reduced-motion: reduce) {
-    .plate { animation: none; opacity: 1; transform: none; }
-    .live .num { transition: none; }
-    .live.dim .num { opacity: 1; }
+  .reveal.on{display:flex}
+  .card{
+    width:min(460px,100%);
+    background:linear-gradient(175deg, rgba(14,44,56,.96), rgba(5,20,28,.97));
+    border:1px solid rgba(217,164,65,.32);
+    border-radius:3px;
+    padding:38px 32px 26px;
+    text-align:center;
+    box-shadow:0 30px 70px rgba(0,0,0,.55), inset 0 1px 0 rgba(239,230,214,.07);
+    animation:surface .8s cubic-bezier(.2,.9,.25,1) both;
   }
+  @keyframes surface{
+    from{opacity:0;transform:translateY(26px) scale(.985)}
+    to{opacity:1;transform:none}
+  }
+  .card .mark{
+    font-size:11.5px;letter-spacing:.09em;color:var(--brass);margin-bottom:20px;
+  }
+  .card .bigday{
+    font-family:var(--serif);font-size:62px;line-height:1;color:var(--bone);
+    font-variant-numeric:tabular-nums;letter-spacing:-.03em;
+  }
+  .card .name{
+    font-family:var(--serif);font-size:18px;color:rgba(217,164,65,.92);margin-top:12px;
+  }
+  .card .msg{
+    font-family:var(--serif);font-size:16.5px;line-height:1.72;
+    color:rgba(239,230,214,.9);margin:22px auto 0;max-width:36ch;
+  }
+  .card .when{font-size:11.5px;color:var(--bone-faint);margin-top:20px;font-variant-numeric:tabular-nums}
+  .card .act{
+    margin-top:26px;appearance:none;border:1px solid rgba(217,164,65,.5);
+    background:transparent;color:var(--brass);font-family:var(--sans);font-size:13px;
+    padding:11px 26px;border-radius:2px;cursor:pointer;transition:background .2s;
+  }
+  .card .act:hover{background:rgba(217,164,65,.11)}
+  .card .act:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
 
-  @media (max-width: 30rem) {
-    .readout { gap: 0.5rem; }
-    .sep { height: clamp(2.8rem, 12vw, 4rem); }
+  /* ---- log ---- */
+  .log{
+    position:fixed;inset:0;z-index:15;display:none;
+    background:rgba(3,12,18,.94);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  }
+  .log.on{display:block}
+  .log-inner{
+    height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;
+    padding:max(26px, env(safe-area-inset-top)) 20px max(90px, env(safe-area-inset-bottom));
+    max-width:620px;margin:0 auto;
+  }
+  .log h2{
+    font-family:var(--serif);font-weight:400;font-size:26px;margin:6px 0 4px;
+  }
+  .log .sub{font-size:12.5px;color:var(--bone-faint);margin-bottom:26px;line-height:1.6}
+  .entry{
+    display:flex;gap:16px;padding:13px 0;border-top:1px solid rgba(239,230,214,.08);
+  }
+  .entry .d{
+    flex:0 0 58px;font-family:var(--serif);font-size:19px;color:rgba(239,230,214,.5);
+    font-variant-numeric:tabular-nums;text-align:right;line-height:1.35;
+  }
+  .entry.hit .d{color:var(--brass)}
+  .entry .t{flex:1;min-width:0;font-size:13.5px;line-height:1.6;color:var(--bone-faint)}
+  .entry.hit .t{color:rgba(239,230,214,.82)}
+  .entry .t em{font-style:normal;display:block;font-size:11.5px;color:var(--bone-faint);margin-top:4px}
+  .entry.next .t{color:var(--surface)}
+  .entry.next .d{color:var(--surface)}
+  .backup{
+    margin-top:34px;padding-top:20px;border-top:1px solid rgba(239,230,214,.08);
+    font-size:12.5px;color:var(--bone-faint);line-height:1.7;
+  }
+  .backup code{
+    display:block;margin:10px 0;padding:10px 12px;border:1px solid rgba(239,230,214,.13);
+    font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;color:rgba(239,230,214,.7);
+    word-break:break-all;border-radius:2px;background:rgba(0,0,0,.25);
+  }
+  .backup .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .log-close{position:fixed;right:16px;top:max(16px, env(safe-area-inset-top));z-index:16}
+
+  .state{font-size:13px;color:var(--bone-faint)}
+
+  @media (prefers-reduced-motion: reduce){
+    .card{animation:none}
   }
 </style>
+</head>
+<body>
 
-<div class="plate">
-  <div class="readout" id="readout" role="timer" aria-label="Time elapsed">
-    <div class="group"><span class="num" id="d">0</span><span class="unit">days</span></div>
-    <span class="sep" aria-hidden="true"></span>
-    <div class="group"><span class="num" id="h">00</span><span class="unit">hours</span></div>
-    <span class="sep" aria-hidden="true"></span>
-    <div class="group"><span class="num" id="m">00</span><span class="unit">minutes</span></div>
-    <span class="sep" aria-hidden="true"></span>
-    <div class="group live" id="live"><span class="num" id="s">00</span><span class="unit">seconds</span></div>
+<canvas id="sea"></canvas>
+<div class="vignette"></div>
+
+<main class="stage" id="stage">
+  <p class="since" id="since">Reading the record…</p>
+
+  <div class="count">
+    <span class="days" id="days">—</span>
+    <span class="days-word" id="daysWord">days</span>
   </div>
 
+  <div class="clock" id="clock">00:00:00</div>
+
   <div class="rule"></div>
-  <p class="inscription" id="since">Finding the start&nbsp;time.</p>
+
+  <p class="horizon" id="horizon"></p>
+
+  <div class="totals" id="totals"></div>
+</main>
+
+<div class="dock">
+  <button class="chip" id="openLog">The log</button>
+</div>
+
+<div class="reveal" id="reveal" role="dialog" aria-modal="true" aria-labelledby="revealDay">
+  <div class="card">
+    <div class="mark" id="revealMark">A day worth marking</div>
+    <div class="bigday" id="revealDay">90</div>
+    <div class="name" id="revealName"></div>
+    <p class="msg" id="revealMsg"></p>
+    <div class="when" id="revealWhen"></div>
+    <button class="act" id="revealAct">Back to the clock</button>
+  </div>
+</div>
+
+<div class="log" id="log" role="dialog" aria-modal="true" aria-labelledby="logTitle">
+  <button class="chip log-close" id="closeLog">Close</button>
+  <div class="log-inner">
+    <h2 id="logTitle">The log</h2>
+    <p class="sub" id="logSub"></p>
+    <div id="logList"></div>
+    <div class="backup">
+      <p>This clock keeps its start date in three places at once, and always trusts the earliest one it finds. A later date can never overwrite an earlier one, so it cannot be wound back — not by clearing storage, not by reopening the file, not by pasting a different code below.</p>
+      <p style="margin-top:14px">Your start code, if you ever want to carry this to another copy:</p>
+      <code id="code">—</code>
+      <div class="row">
+        <button class="chip" id="copyCode">Copy code</button>
+        <button class="chip" id="pasteCode">Paste a code</button>
+        <button class="chip" id="saveFile">Save a copy</button>
+      </div>
+      <p id="backupStatus" style="margin-top:12px;color:var(--surface);min-height:1.2em"></p>
+    </div>
+  </div>
 </div>
 
 <script>
-(function () {
+(function(){
   "use strict";
 
-  var KEY = "count-up-origin";
-  var BAKED = 1788925636000; // set when this page was made, used only if nothing can be stored
+  /* ============================================================
+     1. GENESIS — the moment this file was made. Baked in, so the
+        clock knows its own birthday even with every store wiped.
+     ============================================================ */
+  var BAKED   = 1789410974000;          // 2026-09-15T00:06 IST
+  var FLOOR   = 1577836800000;          // nothing before 2020 is real
+  var K_GEN   = "rising_genesis_v1";
+  var K_LOG   = "rising_log_v1";
+  var DAY_MS  = 86400000;
 
-  var elD = document.getElementById("d");
-  var elH = document.getElementById("h");
-  var elM = document.getElementById("m");
-  var elS = document.getElementById("s");
-  var elLive = document.getElementById("live");
-  var elSince = document.getElementById("since");
-  var elReadout = document.getElementById("readout");
+  var genesis = BAKED;
+  var seen    = {};                      // day -> timestamp reached
+  var queue   = [];
 
-  function pad(n) { return n < 10 ? "0" + n : String(n); }
+  /* ---- storage: window.storage + localStorage + url hash ---- */
+  function hasCloud(){ try { return typeof window.storage !== "undefined" && !!window.storage; } catch(e){ return false; } }
 
-  // Read the origin once. If none is stored, write this moment and never touch it again.
-  async function resolveOrigin() {
-    var store = window.storage;
-    if (!store || typeof store.get !== "function") return BAKED;
+  function cloudGet(k){
+    return new Promise(function(res){
+      if(!hasCloud()) return res(null);
+      try{
+        Promise.resolve(window.storage.get(k))
+          .then(function(r){ res(r && r.value != null ? r.value : null); })
+          .catch(function(){ res(null); });
+      }catch(e){ res(null); }
+    });
+  }
+  function cloudSet(k,v){
+    return new Promise(function(res){
+      if(!hasCloud()) return res(false);
+      try{
+        Promise.resolve(window.storage.set(k,v))
+          .then(function(r){ res(!!r); })
+          .catch(function(){ res(false); });
+      }catch(e){ res(false); }
+    });
+  }
+  function localGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+  function localSet(k,v){ try{ localStorage.setItem(k,v); return true; }catch(e){ return false; } }
 
-    try {
-      var found = await store.get(KEY);
-      var parsed = found && Number(found.value);
-      if (parsed && isFinite(parsed) && parsed > 0) return parsed;
-    } catch (e) {
-      // no value yet
+  function hashGet(){
+    try{
+      var m = String(location.hash||"").match(/g=(\d{10,16})/);
+      return m ? Number(m[1]) : null;
+    }catch(e){ return null; }
+  }
+  function hashSet(t){ try{ history.replaceState(null,"","#g="+t); }catch(e){} }
+
+  function sane(n){
+    return typeof n === "number" && isFinite(n) && n > FLOOR && n < Date.now() + DAY_MS;
+  }
+  function parseT(raw){
+    if(raw == null) return null;
+    try{ var o = JSON.parse(raw); return sane(Number(o.t)) ? Number(o.t) : null; }
+    catch(e){ var n = Number(raw); return sane(n) ? n : null; }
+  }
+
+  function commit(t){
+    genesis = t;
+    var payload = JSON.stringify({t:t});
+    cloudSet(K_GEN, payload);
+    localSet(K_GEN, payload);
+    hashSet(t);
+  }
+
+  /* The rule that makes it unbreakable: every known start date is
+     gathered, and the OLDEST one wins. Writing never moves it forward. */
+  function resolveGenesis(){
+    return cloudGet(K_GEN).then(function(cloud){
+      var all = [BAKED, parseT(cloud), parseT(localGet(K_GEN)), hashGet()]
+                .filter(sane);
+      var oldest = Math.min.apply(null, all);
+      commit(oldest);
+      return oldest;
+    });
+  }
+
+  function loadLog(){
+    return cloudGet(K_LOG).then(function(cloud){
+      var merged = {};
+      [cloud, localGet(K_LOG)].forEach(function(raw){
+        if(!raw) return;
+        try{
+          var o = JSON.parse(raw);
+          Object.keys(o).forEach(function(d){ if(!merged[d] || o[d] < merged[d]) merged[d] = o[d]; });
+        }catch(e){}
+      });
+      seen = merged;
+      return merged;
+    });
+  }
+  function saveLog(){
+    var p = JSON.stringify(seen);
+    cloudSet(K_LOG, p);
+    localSet(K_LOG, p);
+  }
+
+  /* ============================================================
+     2. MILESTONES
+     ============================================================ */
+  var NAMED = [
+    [1,   "The first turn",      "Twenty-four hours. Nothing long was ever made of anything else."],
+    [3,   "Past the novelty",    "Three days in, it stops being interesting and starts being a decision. You made it today."],
+    [7,   "A full week",         "Seven days means you have now done this on a good day, a dull day, and a day you didn't want to."],
+    [10,  "Two digits",          "The counter grew a column. Small thing. Took ten days."],
+    [14,  "A fortnight",         "Long enough that stopping now would feel like losing something you own."],
+    [21,  "Firm ground",         "People will tell you a habit locks in here. It doesn't, quite — but the ground is firmer than it was."],
+    [30,  "One month",           "A month. Go and find whatever you wrote or thought on day one, and read it as a stranger would."],
+    [45,  "Halfway to ninety",   "Forty-five. No fanfare for this number anywhere else, so take it here."],
+    [60,  "Two months",          "The person who started this would not have bet on you reaching today. They were wrong, and you are the proof."],
+    [75,  "The long middle",     "This is the stretch with no scenery. Nothing to see, nothing to celebrate, just the walking. You're doing it."],
+    [90,  "A season",            "Ninety days is a full season of weather. Whatever you were on day one, the seasons have changed you since."],
+    [100, "One hundred",         "Three digits. A hundred sunrises on the same promise."],
+    [120, "Four months",         "Long past the point where anyone was still watching to see if you'd quit."],
+    [150, "A hundred and fifty", "You are closer to a year than to the beginning. Sit with that for a second."],
+    [180, "Half a year",         "Half. A. Year. Six months ago this was an intention. It is now a fact about you."],
+    [200, "Two hundred",         "Two hundred days of a thing you could have abandoned on any one of them."],
+    [240, "Eight months",        "Four to go. The end of the first year is now the near distance, not the far."],
+    [270, "Three seasons",       "Autumn, winter, spring — or whichever three you've had. All of them held."],
+    [300, "Three hundred",       "Sixty-five days out. You can see the year from here."],
+    [333, "Threes",              "A silly, pretty number. It counted itself; you just kept going."],
+    [365, "One year",            "One year, to the day. Everything you've built since the beginning is still standing, because you kept standing."],
+    [400, "Past the year",       "The anniversary has come and gone and the clock did not stop. That's the real test, and you passed it quietly."],
+    [500, "Five hundred",        "Half a thousand days. There are things people spend a lifetime not managing for five hundred days."],
+    [600, "Six hundred",         "You have long since stopped needing a reason. It's just what you do now."],
+    [730, "Two years",           "Two years. Long enough that the beginning is a story you tell, not a thing you remember."],
+    [900, "Nine hundred",        "A hundred from the big one. Don't get clever now — same as yesterday will do."],
+    [1000,"One thousand days",   "A thousand. Written out, it barely looks real: one, zero, zero, zero. Every single one of them was a day you showed up."],
+    [1095,"Three years",         "Three years of the same quiet answer to the same question."],
+    [1460,"Four years",          "Long enough to grow up inside. Whole lives change on shorter timelines than this."],
+    [1825,"Five years",          "Half a decade. At this point the clock is just keeping up with you."],
+    [2555,"Seven years",         "They say every cell has been replaced by now. New body, same promise."],
+    [3650,"Ten years",           "Ten years. There is nothing left to say to a number like that except: still going."]
+  ];
+
+  var SURPRISES = [
+    "Not a milestone. The clock just wanted a word with you.",
+    "Nothing at all is special about today's number. That is more or less the point.",
+    "Unscheduled. Consider it found money.",
+    "No round number, no anniversary, no reason. Still here, though.",
+    "This one wasn't on any list. You get it for showing up on an ordinary day.",
+    "Somewhere in the boring middle, which is where all of this is actually won.",
+    "A small, pointless celebration, which is the best kind.",
+    "The clock has been counting quietly. It thought you should know it's paying attention.",
+    "Today's number will mean nothing to anyone else. Good.",
+    "Marking this one for no reason other than it happened.",
+    "You didn't earn this by doing anything remarkable today. You earned it by not stopping.",
+    "Interrupting the silence briefly to say the number is still going up.",
+    "A day picked at random, long before you got here, to be told: this is going well.",
+    "Nobody is coming to notice this one. So here.",
+    "The interesting days are rare. The ones like today are the whole thing.",
+    "Filed under: kept going.",
+    "This is what progress mostly looks like — an unremarkable number, still climbing.",
+    "A mid-stretch checkpoint. No prize, just an acknowledgement.",
+    "Some days deserve a mark for being survived rather than conquered. Maybe this was one.",
+    "Still counting. Still you doing the counting-worthy part."
+  ];
+
+  function mulberry32(a){
+    return function(){
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+
+  var MILESTONES = [];   // {day, name, msg, surprise}
+  var BY_DAY = {};
+
+  function buildMilestones(g){
+    MILESTONES = [];
+    BY_DAY = {};
+    var taken = {};
+
+    NAMED.forEach(function(m){
+      taken[m[0]] = true;
+      MILESTONES.push({day:m[0], name:m[1], msg:m[2], surprise:false});
+    });
+
+    // keep going past ten years: every hundred days, forever-ish
+    for(var d=1100; d<=12000; d+=100){
+      if(taken[d]) continue;
+      taken[d] = true;
+      MILESTONES.push({day:d, name:numberName(d), msg:"Day "+d.toLocaleString()+". The list of things to say ran out a long time ago. The counting hasn't.", surprise:false});
     }
 
+    // the random ones — a different scatter for every start date
+    var rnd = mulberry32(Math.floor(g / 60000));
+    for(var start=2; start<12000; start+=30){
+      if(rnd() > 0.62) continue;
+      var pick = start + Math.floor(rnd() * 30);
+      if(taken[pick] || pick < 2) continue;
+      taken[pick] = true;
+      MILESTONES.push({
+        day: pick,
+        name: "",
+        msg: SURPRISES[Math.floor(rnd() * SURPRISES.length)],
+        surprise: true
+      });
+    }
+
+    MILESTONES.sort(function(a,b){ return a.day - b.day; });
+    MILESTONES.forEach(function(m){ BY_DAY[m.day] = m; });
+  }
+
+  function numberName(d){
+    if(d % 365 === 0) return (d/365) + " years";
+    return "Day " + d.toLocaleString();
+  }
+
+  function nextAfter(day){
+    for(var i=0;i<MILESTONES.length;i++){ if(MILESTONES[i].day > day) return MILESTONES[i]; }
+    return null;
+  }
+  function prevAtOrBefore(day){
+    var p = null;
+    for(var i=0;i<MILESTONES.length;i++){ if(MILESTONES[i].day <= day) p = MILESTONES[i]; else break; }
+    return p;
+  }
+
+  /* ============================================================
+     3. THE SEA
+     ============================================================ */
+  var cv = document.getElementById("sea");
+  var cx = cv.getContext("2d");
+  var W=0, H=0, DPR=1;
+  var calm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var motes = [], bubbles = [];
+  var level = 0.14, levelTarget = 0.14;
+  var swell = 0;
+
+  function resize(){
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = cv.clientWidth; H = cv.clientHeight;
+    cv.width = Math.floor(W*DPR); cv.height = Math.floor(H*DPR);
+    cx.setTransform(DPR,0,0,DPR,0,0);
+    motes = [];
+    var n = Math.round(Math.min(70, W*H/14000));
+    for(var i=0;i<n;i++){
+      motes.push({x:Math.random()*W, y:Math.random()*H, r:Math.random()*1.5+.3,
+                  a:Math.random()*.4+.08, vy:-(Math.random()*.06+.012), ph:Math.random()*6.28});
+    }
+  }
+  window.addEventListener("resize", resize);
+
+  function addBubbles(n, burst){
+    for(var i=0;i<n;i++){
+      bubbles.push({
+        x: Math.random()*W,
+        y: H + Math.random()*40,
+        r: Math.random()*(burst?3.4:2)+.7,
+        v: (Math.random()*.9+.35) * (burst?2.1:1),
+        sw: Math.random()*1.6+.4,
+        ph: Math.random()*6.28,
+        a: Math.random()*.42+.15
+      });
+    }
+  }
+
+  function surfaceY(x, t){
+    var base = H*(1-level);
+    if(calm) return base;
+    return base
+      + Math.sin(x*0.011 + t*0.55) * 5.5
+      + Math.sin(x*0.027 - t*0.83) * 2.6
+      + Math.sin(x*0.005 + t*0.31) * 7.5
+      - swell*26;
+  }
+
+  function draw(t){
+    cx.clearRect(0,0,W,H);
+
+    var sky = cx.createLinearGradient(0,0,0,H);
+    sky.addColorStop(0,"#020A11");
+    sky.addColorStop(.55,"#05161F");
+    sky.addColorStop(1,"#07202B");
+    cx.fillStyle = sky; cx.fillRect(0,0,W,H);
+
+    // drifting motes
+    for(var i=0;i<motes.length;i++){
+      var m = motes[i];
+      if(!calm){ m.y += m.vy; m.x += Math.sin(t*0.3 + m.ph)*0.08; if(m.y < -6){ m.y = H+6; m.x = Math.random()*W; } }
+      cx.globalAlpha = m.a * (0.55 + 0.45*Math.sin(t*0.9 + m.ph));
+      cx.fillStyle = "#BFE7E0";
+      cx.beginPath(); cx.arc(m.x, m.y, m.r, 0, 6.283); cx.fill();
+    }
+    cx.globalAlpha = 1;
+
+    level += (levelTarget - level) * 0.04;
+    swell *= 0.955;
+
+    // water body
+    var step = 6;
+    cx.beginPath();
+    cx.moveTo(0, H);
+    for(var x=0; x<=W+step; x+=step){ cx.lineTo(x, surfaceY(x,t)); }
+    cx.lineTo(W, H); cx.closePath();
+
+    var wg = cx.createLinearGradient(0, H*(1-level)-30, 0, H);
+    wg.addColorStop(0,   "rgba(30,102,112,.62)");
+    wg.addColorStop(.35, "rgba(17,65,79,.72)");
+    wg.addColorStop(1,   "rgba(6,32,43,.9)");
+    cx.fillStyle = wg; cx.fill();
+
+    // bubbles clipped to the water
+    cx.save(); cx.clip();
+    for(var b=bubbles.length-1; b>=0; b--){
+      var u = bubbles[b];
+      if(!calm){ u.y -= u.v; u.x += Math.sin(t*1.3 + u.ph)*u.sw*0.35; }
+      var sy = surfaceY(u.x, t);
+      if(u.y < sy - 4){ bubbles.splice(b,1); continue; }
+      cx.globalAlpha = u.a * Math.min(1,(H-u.y)/60 + .25);
+      cx.strokeStyle = "#9FE4DA"; cx.lineWidth = .9;
+      cx.beginPath(); cx.arc(u.x, u.y, u.r, 0, 6.283); cx.stroke();
+    }
+    cx.globalAlpha = 1;
+    cx.restore();
+
+    // the surface line — the only truly bright thing on screen
+    cx.beginPath();
+    for(var x2=0; x2<=W+step; x2+=step){
+      var y = surfaceY(x2,t);
+      if(x2===0) cx.moveTo(x2,y); else cx.lineTo(x2,y);
+    }
+    cx.strokeStyle = "rgba(122,225,212,.5)";
+    cx.lineWidth = 1.25;
+    cx.shadowColor = "rgba(95,201,188,.55)";
+    cx.shadowBlur = 16;
+    cx.stroke();
+    cx.shadowBlur = 0;
+  }
+
+  /* ============================================================
+     4. THE CLOCK
+     ============================================================ */
+  var $ = function(id){ return document.getElementById(id); };
+  var elDays = $("days"), elWord = $("daysWord"), elClock = $("clock");
+  var elSince = $("since"), elHorizon = $("horizon"), elTotals = $("totals");
+  var lastDay = -1, ready = false;
+
+  function two(n){ return n<10 ? "0"+n : ""+n; }
+
+  function fmtDate(ms){
+    var d = new Date(ms);
+    return d.toLocaleDateString(undefined,{day:"numeric",month:"long",year:"numeric"}) +
+           ", " + d.toLocaleTimeString(undefined,{hour:"2-digit",minute:"2-digit"});
+  }
+
+  function humanGap(ms){
+    var s = Math.max(0, Math.floor(ms/1000));
+    var d = Math.floor(s/86400); s -= d*86400;
+    var h = Math.floor(s/3600);  s -= h*3600;
+    var m = Math.floor(s/60);
+    if(d > 0) return d + (d===1?" day ":" days ") + h + "h";
+    if(h > 0) return h + "h " + m + "m";
+    return m + "m";
+  }
+
+  function tick(){
     var now = Date.now();
-    try {
-      await store.set(KEY, String(now));
-    } catch (e) {
-      // couldn't persist; the tab still counts from now
-    }
-    return now;
-  }
+    var el = now - genesis;
+    if(el < 0) el = 0;
 
-  function inscribe(origin) {
-    var when = new Date(origin);
-    var day = when.toLocaleDateString(undefined, {
-      day: "numeric", month: "long", year: "numeric"
-    });
-    var clock = when.toLocaleTimeString(undefined, {
-      hour: "numeric", minute: "2-digit"
-    });
-    elSince.innerHTML = "Running without interruption since " +
-      '<span class="stamp">' + clock + "</span> on " +
-      '<span class="stamp">' + day + "</span>.";
-  }
+    var days = Math.floor(el / DAY_MS);
+    var rem  = el - days*DAY_MS;
+    var h = Math.floor(rem/3600000);
+    var m = Math.floor(rem%3600000/60000);
+    var s = Math.floor(rem%60000/1000);
+    var tenth = Math.floor(rem%1000/100);
 
-  function start(origin) {
-    Object.freeze(origin);
-    inscribe(origin);
+    elDays.textContent = days.toLocaleString();
+    elWord.textContent = days === 1 ? "day" : "days";
+    elClock.innerHTML = two(h)+":"+two(m)+":"+two(s)+'<span class="tenth">.'+tenth+"</span>";
 
-    var lastSecond = -1;
+    var nx = nextAfter(days);
+    var pv = prevAtOrBefore(days);
+    var fromDay = pv ? pv.day : 0;
 
-    function paint() {
-      var elapsed = Date.now() - origin;
-      if (elapsed < 0) elapsed = 0; // a changed system clock can't wind this back
-
-      var total = Math.floor(elapsed / 1000);
-      var s = total % 60;
-      var m = Math.floor(total / 60) % 60;
-      var h = Math.floor(total / 3600) % 24;
-      var d = Math.floor(total / 86400);
-
-      if (s === lastSecond) return;
-      lastSecond = s;
-
-      elD.textContent = String(d);
-      elH.textContent = pad(h);
-      elM.textContent = pad(m);
-      elS.textContent = pad(s);
-
-      elReadout.setAttribute(
-        "aria-label",
-        d + " days, " + h + " hours, " + m + " minutes elapsed"
-      );
-
-      elLive.classList.add("dim");
-      setTimeout(function () { elLive.classList.remove("dim"); }, 140);
+    if(nx){
+      var span = (nx.day - fromDay) * DAY_MS;
+      var done = el - fromDay*DAY_MS;
+      var frac = Math.max(0, Math.min(1, done/span));
+      levelTarget = 0.09 + frac*0.44;
+      elHorizon.innerHTML = "The water rises toward day <b>" + nx.day.toLocaleString() + "</b>. " +
+        humanGap(genesis + nx.day*DAY_MS - now) + " to go.";
+    }else{
+      levelTarget = 0.5;
+      elHorizon.textContent = "Off the end of the list. Keep going anyway.";
     }
 
-    paint();
-    setInterval(paint, 250);
-    document.addEventListener("visibilitychange", paint);
-    window.addEventListener("focus", paint);
+    elTotals.innerHTML =
+      '<span><i>' + (el/3600000).toFixed(1) + '</i> hours</span>' +
+      '<span><i>' + Math.floor(el/60000).toLocaleString() + '</i> minutes</span>' +
+      '<span><i>' + Math.floor(el/1000).toLocaleString() + '</i> seconds</span>' +
+      '<span><i>' + (days/7).toFixed(1) + '</i> weeks</span>';
+
+    if(ready && days !== lastDay){
+      lastDay = days;
+      checkMilestones(days);
+    }
   }
 
-  resolveOrigin().then(start).catch(function () { start(BAKED); });
+  function checkMilestones(currentDay){
+    var fresh = [];
+    for(var i=0;i<MILESTONES.length;i++){
+      var ms = MILESTONES[i];
+      if(ms.day > currentDay) break;
+      if(!seen[ms.day]) fresh.push(ms);
+    }
+    if(!fresh.length) return;
+    fresh.forEach(function(ms){ seen[ms.day] = genesis + ms.day*DAY_MS; });
+    saveLog();
+    queue = queue.concat(fresh);
+    if(!revealOpen) showNext();
+  }
+
+  /* ---- reveal ---- */
+  var revealOpen = false;
+  var elReveal = $("reveal");
+  function showNext(){
+    if(!queue.length){ elReveal.classList.remove("on"); revealOpen = false; return; }
+    var ms = queue.shift();
+    $("revealMark").textContent = ms.surprise ? "An unscheduled interruption" : "A day worth marking";
+    $("revealDay").textContent = ms.day.toLocaleString();
+    $("revealName").textContent = ms.name || "";
+    $("revealMsg").textContent = ms.msg;
+    $("revealWhen").textContent = "Reached " + fmtDate(seen[ms.day] || Date.now());
+    $("revealAct").textContent = queue.length ? "Next (" + queue.length + " more)" : "Back to the clock";
+    elReveal.classList.add("on");
+    revealOpen = true;
+    swell = 1;
+    addBubbles(46, true);
+    $("revealAct").focus();
+  }
+  $("revealAct").addEventListener("click", showNext);
+
+  /* ---- log ---- */
+  var elLog = $("log");
+  function renderLog(){
+    var days = Math.floor((Date.now()-genesis)/DAY_MS);
+    var hit = Object.keys(seen).length;
+    $("logSub").textContent = hit + " marked so far. Days with no entry above your current count were surprises that haven't been drawn yet — they only appear once you reach them.";
+
+    var rows = [];
+    MILESTONES.forEach(function(ms){
+      if(ms.day > days + 1200) return;
+      var reached = !!seen[ms.day];
+      if(ms.surprise && !reached) return;               // keep the secret
+      var cls = reached ? "entry hit" : "entry";
+      var next = (!reached && ms.day === (nextAfter(days)||{}).day);
+      if(next) cls = "entry next";
+      var body;
+      if(reached){
+        body = (ms.name ? "<strong style='font-weight:400'>"+esc(ms.name)+"</strong> — " : "") + esc(ms.msg) +
+               "<em>" + fmtDate(seen[ms.day]) + "</em>";
+      }else{
+        body = ms.name ? esc(ms.name) : "Not yet";
+        body += "<em>" + humanGap(genesis + ms.day*DAY_MS - Date.now()) + " away</em>";
+      }
+      rows.push('<div class="'+cls+'"><div class="d">'+ms.day.toLocaleString()+'</div><div class="t">'+body+'</div></div>');
+    });
+    $("logList").innerHTML = rows.join("");
+    $("code").textContent = btoa("RISING:"+genesis);
+  }
+  function esc(s){ return String(s).replace(/[&<>]/g,function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c]; }); }
+
+  $("openLog").addEventListener("click", function(){ renderLog(); elLog.classList.add("on"); $("closeLog").focus(); });
+  $("closeLog").addEventListener("click", function(){ elLog.classList.remove("on"); });
+
+  var st = $("backupStatus");
+  function say(t){ st.textContent = t; }
+
+  $("copyCode").addEventListener("click", function(){
+    var v = $("code").textContent;
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(v).then(function(){ say("Code copied."); },
+                                           function(){ say("Copy failed — select the code above by hand."); });
+    }else{ say("Copy isn't available here. Select the code above by hand."); }
+  });
+
+  $("pasteCode").addEventListener("click", function(){
+    var v = prompt("Paste a start code. It will only be accepted if it is older than the date already recorded — this clock never moves forward.");
+    if(!v) return;
+    var t = null;
+    try{
+      var dec = atob(v.trim());
+      if(dec.indexOf("RISING:") === 0) t = Number(dec.slice(7));
+    }catch(e){}
+    if(!sane(t)){ say("That code isn't readable. Nothing changed."); return; }
+    if(t >= genesis){ say("That start date is not older than the one on record. Nothing changed — which is the whole idea."); return; }
+    commit(t);
+    buildMilestones(genesis);
+    lastDay = -1;
+    $("since").textContent = "Counting since " + fmtDate(genesis);
+    renderLog();
+    say("Accepted. The clock now runs from " + fmtDate(t) + ".");
+  });
+
+  $("saveFile").addEventListener("click", function(){
+    try{
+      var blob = new Blob([document.documentElement.outerHTML.replace(
+        /var BAKED   = \d+;/, "var BAKED   = " + genesis + ";")], {type:"text/html"});
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "the-rising.html";
+      a.click();
+      setTimeout(function(){ URL.revokeObjectURL(a.href); }, 4000);
+      say("Saved. That copy carries your start date inside it and works offline.");
+    }catch(e){ say("Couldn't save a copy here. Use the code above instead."); }
+  });
+
+  document.addEventListener("keydown", function(e){
+    if(e.key === "Escape"){
+      if(revealOpen){ showNext(); }
+      else elLog.classList.remove("on");
+    }
+  });
+
+  /* ============================================================
+     5. RUN
+     ============================================================ */
+  var t0 = performance.now();
+  function frame(now){
+    draw((now - t0)/1000);
+    tick();
+    requestAnimationFrame(frame);
+  }
+
+  resize();
+  addBubbles(14,false);
+  setInterval(function(){ if(!calm && bubbles.length < 60) addBubbles(1,false); }, 1400);
+
+  resolveGenesis()
+    .then(loadLog)
+    .then(function(){
+      buildMilestones(genesis);
+      $("since").textContent = "Counting since " + fmtDate(genesis);
+      var days = Math.floor((Date.now()-genesis)/DAY_MS);
+      lastDay = days;
+      ready = true;
+      // anything crossed while you were away gets shown on return
+      checkMilestones(days);
+      requestAnimationFrame(frame);
+    })
+    .catch(function(){
+      buildMilestones(genesis);
+      $("since").textContent = "Counting since " + fmtDate(genesis);
+      ready = true;
+      requestAnimationFrame(frame);
+    });
+
+  // flush on the way out, so nothing is lost to a closed tab
+  function flush(){ commit(genesis); saveLog(); }
+  window.addEventListener("pagehide", flush);
+  document.addEventListener("visibilitychange", function(){ if(document.hidden) flush(); });
 })();
 </script>
+</body>
+</html>
